@@ -1,1 +1,65 @@
+#include <pitches.h>
 
+// Pinler
+#define SPEAKER_PIN D1
+
+// Süreler
+#define NOTE_DURATION_QUARTER 250
+#define NOTE_DURATION_EIGHTH 125
+#define NOTE_DURATION_SIXTEENTH 62.5
+
+// Notlar
+#define C4  261.63
+#define D4  293.66
+#define E4  329.63
+#define F4  349.23
+#define G4  392.00
+#define A4  440.00
+#define B4  493.88
+
+void setup() {
+  // Pin modunu ayarlayın
+  pinMode(SPEAKER_PIN, OUTPUT);
+}
+
+void loop() {
+  // Melodiyi çal
+  playNote(A4, NOTE_DURATION_QUARTER);
+  playNote(G4, NOTE_DURATION_QUARTER);
+  playNote(F4, NOTE_DURATION_QUARTER);
+  playNote(E4, NOTE_DURATION_QUARTER);
+  playNote(D4, NOTE_DURATION_QUARTER);
+  playNote(C4, NOTE_DURATION_QUARTER);
+  playNote(B4, NOTE_DURATION_QUARTER);
+  
+  playNote(A4, NOTE_DURATION_EIGHTH);
+  playNote(G4, NOTE_DURATION_EIGHTH);
+  playNote(F4, NOTE_DURATION_EIGHTH);
+  playNote(E4, NOTE_DURATION_EIGHTH);
+  playNote(D4, NOTE_DURATION_EIGHTH);
+  playNote(C4, NOTE_DURATION_EIGHTH);
+  playNote(B4, NOTE_DURATION_EIGHTH);
+  
+  playNote(C4, NOTE_DURATION_QUARTER);
+  playNote(D4, NOTE_DURATION_QUARTER);
+  playNote(E4, NOTE_DURATION_QUARTER);
+  playNote(F4, NOTE_DURATION_QUARTER);
+  playNote(G4, NOTE_DURATION_QUARTER);
+  playNote(A4, NOTE_DURATION_QUARTER);
+  playNote(B4, NOTE_DURATION_QUARTER);
+  
+  // Susma süreleri ekleyin
+  delay(NOTE_DURATION_QUARTER);
+  delay(NOTE_DURATION_EIGHTH);
+  
+  // Biraz bekleyin
+  delay(1000);
+}
+
+void playNote(int note, int duration) {
+  // Tonu çal
+  tone(SPEAKER_PIN, note, duration);
+  
+  // Bekleyin
+  delay(duration);
+}
