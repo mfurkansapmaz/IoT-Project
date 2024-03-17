@@ -1,1 +1,37 @@
+#include <DallasTemperature.h>
+#include <OneWire.h>
 
+// Define the data pin connected to the DS18B20 sensor
+const int dataPin = D4;
+
+// Create an instance of the OneWire class
+OneWire oneWire(dataPin);
+
+// Create an instance of the DallasTemperature class
+DallasTemperature sensors(&oneWire);
+
+void setup() {
+  // Start serial communication for monitoring
+  Serial.begin(9600);
+  
+  // Start the OneWire library
+  sensors.begin();
+}
+
+void loop() {
+  // Request temperature readings from all DS18B20 sensors
+  sensors.requestTemperatures();
+
+  // Get the temperature from the first sensor (assuming only one sensor)
+float temperature = sensors.requestTemperaturesByIndex(0);
+
+  // Check if temperature is above 50ºC
+  if (temperature > 50) {
+    Serial.println("Temperature is above 50ºC");
+  } else {
+    Serial.println("Temperature is below 50ºC");
+  }
+
+  // Delay between readings (adjust as needed)
+  delay(5000);
+}
