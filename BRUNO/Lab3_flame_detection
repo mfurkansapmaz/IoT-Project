@@ -1,0 +1,24 @@
+int led = LED_BUILTIN;
+int sensorD0 = D1;
+int val;
+
+void setup()
+{
+  pinMode(led, OUTPUT);
+  pinMode(sensorD0, INPUT);
+}
+
+void loop()
+{
+  val=digitalRead(sensorD0);
+  if(val==HIGH)
+  {
+    digitalWrite(led, LOW);
+    Serial.println("Flame dectected!");
+  }
+  else
+  {
+    digitalWrite(led, HIGH);
+    Serial.println("Conditions are normal!");
+  }
+}
