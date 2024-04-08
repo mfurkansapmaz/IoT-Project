@@ -6,6 +6,7 @@ void setup()
 {
   pinMode(led, OUTPUT);
   pinMode(sensorD0, INPUT);
+Serial.begin(9600);
 }
 
 void loop()
