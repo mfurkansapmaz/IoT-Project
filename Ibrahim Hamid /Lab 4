@@ -1,73 +1,73 @@
-//This code connects to home WiFi and access to the Postman Echo website
-
 #include <ESP8266WiFi.h>
 
-//Wifi network parameters
+// WiFi network parameters
 const char* ssid = "Sarray";
 const char* password = "113113113";
 
-//Host to connect to and WiFi client parameters
+// Host to connect to and Wifi client parameters
 const char* host = "postman-echo.com";
 WiFiClient client;
 const int httpPort = 80;
 
-void setup () {
-  //start serial
+void setup() {
+  // Start serial
   Serial.begin(115200);
-  //delay to initiate the port
+  // Small delay for serial initialization
   delay(10);
 
-  //connecting to the WiFi
+  // Connecting to Wifi network
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
-  while (WiFi.status() !=WL_CONNECTED){
+  while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
+    Serial.print(" . ");
   }
-Serial.println("");
-Serial.println("WiFi cpnnected");
-Serial.println("IP address: ");
-Serial.println(WiFi.localIP());
-
+  Serial.println(" ");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 }
 
-void loop(){
-//5 sec delay
-delay(5000);
-Serial.print("connecting to ");
-Serial.println(host);
+void loop() {
+  // Delay for Wifi initialization and avoid continuous requests
+  delay(5000);
+  Serial.print("Connecting to ");
+  Serial.println(host);
 
-// connection to the website
-if (!client.connect(host, httpPort)){
-  Serial.println("connection failed");
-  return;
-}
-
-//URL and connection request
-String url = "/postman-echo.com/get";
-Serial.print("Requesting URL: ");
-Serial.println(url);
-client.print(String("GET ") + url + "HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
-
-//wait 5 sec for server response
-unsigned long timeout = millis();
-while (client.available() == 0){
-  if (millis() - timeout > 5000){
-    Serial.println(">>> Client Timeout !");
-    client.stop();
+  // Connect to the website
+  if (!client.connect(host, httpPort)) {
+    Serial.println("Connection failed");
     return;
   }
-}
 
-while(client.available()){ // server responce processing
-String line = client.readStringUntil('\r');
-Serial.print(line);
-}
+  // Specific URL for GET request
+  String url = "/get";
+  Serial.print("Requesting URL: ");
+  Serial.println(url);
 
-Serial.println();
-Serial.println("colsing connection");
+  // Send HTTP GET request
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
 
+  // Wait for server response (timeout after 5 seconds)
+  unsigned long timeout = millis();
+  while (client.available() == 0) {
+    if (millis() - timeout > 5000) {
+      Serial.println(">>> Client Timeout!");
+      client.stop();
+      return;
+    }
+  }
+
+  // Process server response
+  while (client.available()) {
+    String line = client.readStringUntil('\r');
+    Serial.print(line);
+  }
+
+  Serial.println();
+  Serial.println("Closing connection");
+  client.stop(); // Close the connection after processing the response
 }
