@@ -1,0 +1,9 @@
+//SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.0;
+contract constants {
+uint idDigits = 16; // Replace 16 with your desired number of digits
+uint idModulus = 10**idDigits;
+
+}
+
+      
