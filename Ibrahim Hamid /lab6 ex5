@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+struct Product {
+  string name;
+  uint id;
+}
+
+contract ProductStore {
+  Product[] public products;
+
+  function addProduct(string memory _name, uint _id) public {
+    products.push(Product(_name, _id));
+  }
+}
