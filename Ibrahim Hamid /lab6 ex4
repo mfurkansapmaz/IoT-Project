@@ -1,0 +1,6 @@
+pragma ^0.8.0;
+
+struct Product {
+  string name;
+  uint id;
+}
