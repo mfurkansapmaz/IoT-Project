@@ -1,0 +1,24 @@
+pragma solidity ^0.8.0;
+// SPDX-License-Identifier: GPL-3.0
+contract Products {
+    struct Product {
+        string name;
+        uint id;
+    }
+
+    Product[] private products;
+    mapping(uint => address) public productToOwner; // Maps product ID to owner address
+    mapping(address => uint) public ownerProductCount; // Maps owner address to product count
+
+    function createProduct(string memory _name, uint _id) public {
+        Product memory newProduct = Product(_name, _id);
+        products.push(newProduct);
+        productToOwner[_id] = msg.sender; // Assign ownership to the function caller
+        ownerProductCount[msg.sender]++;
+    }
+
+    // Function to retrieve product owner (view since it doesn't modify state)
+    function getProductOwner(uint _productId) public view returns (address) {
+        return productToOwner[_productId];
+    }
+}
