@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.6.12 <0.9.0;
+contract ProductContract {
+    // Mapping to store the number of products each owner has
+    mapping(address => uint) public ownerProductCount;
+
+    // Mapping to store the owner of each product
+    mapping(uint => address) public productToOwner;
+
+    // Array to store all products
+    uint[] public products;
+
+    function getProductsByOwner(address _owner) external view returns (uint[] memory) {
+        uint counter = 0;
+        uint[] memory result = new uint[](ownerProductCount[_owner]);
+
+        for (uint i = 0; i < products.length; i++) {
+            if (productToOwner[i] == _owner) {
+                result[counter] = i;
+                counter++;
+            }
+        }
+
+        return result;
+    }
+}
