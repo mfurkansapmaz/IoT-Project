@@ -1,0 +1,17 @@
+pragma solidity ^0.8.0;
+
+contract UserAges {
+  // Mapping to store user IDs to their ages
+  mapping(uint => uint) public age;
+
+  // Modifier to check if a user is older than a certain age
+  modifier olderThan(uint _age, uint _userId) {
+    require(age[_userId] >= _age, "User must be older than the specified age");
+    _;
+  }
+
+  // Function to validate users based on their age (public view with a modifier)
+  function validationUsers(uint _userId) public view olderThan(18, _userId) {
+    // No operation needed here; the validation happens in the modifier
+  }
+}
