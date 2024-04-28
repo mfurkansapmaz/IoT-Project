@@ -1,0 +1,26 @@
+#include <ESP8266WiFi.h>
+
+const char* ssid = "write it here";
+const char* password = "write it here ";
+
+const int analogPin = A0; // Analog pin connected to MQ-135 sensor
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("Connected to WiFi");
+}
+
+void loop() {
+  int sensorValue = analogRead(analogPin);
+  Serial.print("Sensor Value: ");
+  Serial.println(sensorValue);
+
+  // You can add code here to map the sensor value to a gas concentration or take other actions based on the reading
+
+  delay(1000);
+}
