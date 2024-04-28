@@ -1,0 +1,59 @@
+#include <ESP8266WiFi.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+const char* ssid = "Sarray";
+const char* password = "113113113";
+
+const int analogPin = A0; // Analog pin connected to MQ-135 sensor
+
+// Data wire is plugged into D1 on the ESP8266
+#define ONE_WIRE_BUS D1
+
+// A OneWire instance is created to communicate with the sensor
+OneWire oneWire(ONE_WIRE_BUS);
+
+// We connect the OneWire bus with the temperature sensor.
+DallasTemperature sensors(&oneWire);
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Starting to measure temperature and smoke...");
+  
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("Connected to WiFi");
+  
+  sensors.begin();
+}
+
+void loop() {
+  // Read temperature
+  delay(3000);
+  Serial.print("Requesting temperature...");
+
+  sensors.requestTemperatures(); // Send the command to get the temperature
+  Serial.println("DONE");
+  Serial.print("Temperature is: ");
+  Serial.println(sensors.getTempCByIndex(0));
+  float temperature = sensors.getTempCByIndex(0);
+
+  // Check if temperature is above 50ºC
+  if (temperature > 50) {
+    Serial.println("Temperature is above 50ºC");
+  } else {
+    Serial.println("Temperature is below 50ºC");
+  }
+
+  // Read smoke sensor value
+  int sensorValue = analogRead(analogPin);
+  Serial.print("Smoke Sensor Value: ");
+  Serial.println(sensorValue);
+
+  // You can add code here to map the sensor value to a gas concentration or take other actions based on the reading
+
+  delay(2000); // Adjust delay between readings as needed
+}
