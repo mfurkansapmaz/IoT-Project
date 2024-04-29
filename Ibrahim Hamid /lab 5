@@ -1,0 +1,77 @@
+#include "thingProperties.h"
+#include <DallasTemperature.h>
+#include <OneWire.h>
+#define ONE_WIRE_BUS D1
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+
+const int smokePin = A0; // Replace with your actual analog pin
+int smokeValue;
+
+void setup() {
+  // Initialize serial and wait for port to open:
+  Serial.begin(9600);
+  // Start the OneWire library
+  sensors.begin();
+  // Delay for Serial Monitor
+  delay(1500);
+  // Defined in thingProperties.h
+  initProperties();
+  // Connect to Arduino IoT Cloud
+  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+  ArduinoCloud.addProperty(temperature, READ, ON_CHANGE);
+  ArduinoCloud.addProperty(smoke, READ, ON_CHANGE);  // Add smoke property
+  ArduinoCloud.addProperty(message, READWRITE, ON_CHANGE); // Add message property
+  setDebugMessageLevel(2);
+  ArduinoCloud.printDebugInfo();
+  pinMode(smokePin, INPUT); // Initialize smoke sensor pin
+}
+
+void loop() {
+  ArduinoCloud.update();
+  // Request temperature readings from all DS18B20 sensors
+  // Get the temperature from the first sensor (assuming only one sensor)
+  sensors.requestTemperatures();
+  float tempC = sensors.getTempCByIndex(0);
+  // Update the temperature property
+  if (!isnan(tempC)) {
+    temperature = tempC;
+    ArduinoCloud.update();
+    // Update message based on temperature
+    if (tempC > 50) {
+      message = "Temperature is above 50 degrees Celsius";
+    } else {
+      message = "Temperature is below 50 degrees Celsius";
+    }
+    ArduinoCloud.update();
+  }
+
+  // Read smoke sensor value
+  smokeValue = analogRead(smokePin);
+
+  // Update smoke property
+  if (!isnan(smokeValue)) {
+    smoke = smokeValue;
+    ArduinoCloud.update();
+  }
+
+  delay(1000);
+}
+
+void onTemperatureChange() {
+  Serial.println(temperature);
+}
+
+/*
+  Since Smoke is READ variable, onSmokeChange() is executed every time a new value is received from IoT Cloud.
+*/
+void onSmokeChange() {
+  // Add your code here to act upon Smoke change (optional)
+}
+
+/*
+  Since message is READWRITE variable, onMessageChange() is executed every time a new value is received from IoT Cloud or when you update it from the dashboard.
+*/
+void onMessageChange() {
+  // Add your code here to act upon Message change (optional)
+}
