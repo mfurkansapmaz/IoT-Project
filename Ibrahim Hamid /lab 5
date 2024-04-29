@@ -21,7 +21,8 @@ void setup() {
   ArduinoCloud.begin(ArduinoIoTPreferredConnection);
   ArduinoCloud.addProperty(temperature, READ, ON_CHANGE);
   ArduinoCloud.addProperty(smoke, READ, ON_CHANGE);  // Add smoke property
-  ArduinoCloud.addProperty(message, READWRITE, ON_CHANGE); // Add message property
+  ArduinoCloud.addProperty(message, READWRITE, ON_CHANGE); // Add message property for temperature
+  ArduinoCloud.addProperty(smokeMessage, READWRITE, ON_CHANGE); // Add message property for smoke
   setDebugMessageLevel(2);
   ArduinoCloud.printDebugInfo();
   pinMode(smokePin, INPUT); // Initialize smoke sensor pin
@@ -53,6 +54,13 @@ void loop() {
   if (!isnan(smokeValue)) {
     smoke = smokeValue;
     ArduinoCloud.update();
+    // Update smoke message based on smoke value
+    if (smokeValue > 200) {
+      smokeMessage = "Fire situation: smoke value is above 200";
+    } else {
+      smokeMessage = "Normal situation: smoke value is below 200";
+    }
+    ArduinoCloud.update();
   }
 
   delay(1000);
@@ -74,4 +82,11 @@ void onSmokeChange() {
 */
 void onMessageChange() {
   // Add your code here to act upon Message change (optional)
+}
+
+/*
+  Since smokeMessage is READWRITE variable, onSmokeMessageChange() is executed every time a new value is received from IoT Cloud or when you update it from the dashboard.
+*/
+void onSmokeMessageChange() {
+  // Add your code here to act upon Smoke Message change (optional)
 }
