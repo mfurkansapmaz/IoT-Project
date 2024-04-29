@@ -1,0 +1,45 @@
+// I created a Smart Contract between Shipyard to Customer. Customer can purchase tokens from shipyard to use in payment for different product or services.
+
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.5.0 <0.8.0;
+
+contract TokenSale {
+    address public shipyard;
+    uint256 public tokenPrice = 2 ether;
+    uint256 public etherBalance;
+
+    struct Receiver {
+        string name;
+        uint256 tokens;
+    }
+    mapping(address => Receiver) public customers;
+
+    modifier onlyShipyard() {
+        require(msg.sender == shipyard, "Only shipyard can perform this action");
+        _;
+    }
+
+    constructor() {
+        shipyard = msg.sender;
+        customers[shipyard].tokens = 100;
+    }
+
+    function buyTokens(uint256 _numberOfTokens) public payable {
+        require(msg.value >= tokenPrice, "Insufficient Ether sent");
+
+        uint256 tokensAvailable = customers[shipyard].tokens;
+        require(tokensAvailable >= _numberOfTokens, "Not enough tokens available");
+
+        customers[shipyard].tokens -= _numberOfTokens;
+        customers[msg.sender].tokens += _numberOfTokens;
+        etherBalance += msg.value;
+
+        if (msg.value > tokenPrice) {
+            msg.sender.transfer(msg.value - tokenPrice); // refund excess ether
+        }
+    }
+
+    function getEtherBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+}
