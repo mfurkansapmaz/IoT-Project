@@ -1,0 +1,69 @@
+#include <DallasTemperature.h>
+#include <OneWire.h>
+
+#define ONE_WIRE_BUS D1
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+
+const int smokePin = A0; // Replace with your actual analog pin
+const int buzzerPin = D2; // Replace with your actual pin for the passive buzzer
+const int ledPin = D3;    // Replace with your actual pin for the LED
+const int flamePin = D8;  // Replace with your actual pin for the flame sensor
+
+void setup() {
+  // Initialize serial
+  Serial.begin(9600);
+
+  // Start the OneWire library
+  sensors.begin();
+
+  // Initialize pins
+  pinMode(smokePin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(ledPin, OUTPUT);
+  pinMode(flamePin, INPUT);
+}
+
+void activateAlarm() {
+  tone(buzzerPin, 1000); // Activate buzzer
+  digitalWrite(ledPin, HIGH); // Turn on LED
+}
+
+void deactivateAlarm() {
+  noTone(buzzerPin); // Deactivate buzzer
+  digitalWrite(ledPin, LOW); // Turn off LED
+}
+
+void loop() {
+  // Request temperature readings from all DS18B20 sensors
+  sensors.requestTemperatures();
+  float tempC = sensors.getTempCByIndex(0);
+  
+  // Read smoke sensor value
+  int smokeValue = analogRead(smokePin);
+
+  // Read flame sensor value
+  int flameState = digitalRead(flamePin);
+
+  // Output temperature, smoke, and flame values to Serial Monitor
+  Serial.print("Temperature: ");
+  Serial.print(tempC);
+  Serial.println(" °C");
+  Serial.print("Smoke Value: ");
+  Serial.println(smokeValue);
+  Serial.print("Flame State: ");
+  Serial.println(flameState);
+
+  // Check if flame is detected or if temperature or smoke value exceeds thresholds
+  if (flameState == HIGH || tempC > 50 || smokeValue > 150) {
+    // Activate buzzer and LED
+    activateAlarm();
+    Serial.println("Warning: Flame detected or temperature/smoke value exceeded threshold!");
+  } else {
+    // Deactivate buzzer and LED
+    deactivateAlarm();
+    Serial.println("Normal situation: Flame not detected and temperature/smoke value within limits.");
+  }
+
+  delay(1000);
+}
