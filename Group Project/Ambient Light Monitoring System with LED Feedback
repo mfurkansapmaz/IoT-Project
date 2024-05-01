@@ -1,0 +1,37 @@
+// Define pins
+const int LDR_PIN = A0;
+const int LED_PIN = D1;
+
+// Define thresholds
+const int LIGHT_THRESHOLD = 700;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LDR_PIN, INPUT);
+  pinMode(LED_PIN, OUTPUT);
+}
+
+void loop() {
+  // Read light intensity
+  int lightIntensity = analogRead(LDR_PIN);
+
+  // Print light intensity to serial monitor
+  Serial.print("Light intensity: ");
+  Serial.println(lightIntensity);
+
+  // Check light intensity
+  if (lightIntensity > LIGHT_THRESHOLD) {
+    // If light intensity is above threshold, blink LED and show message
+    digitalWrite(LED_PIN, HIGH);
+    Serial.println("Not enough light!");
+    delay(500);
+    digitalWrite(LED_PIN, LOW);
+    delay(500);
+  } else {
+    // If light intensity is below threshold, turn off LED and show message
+    digitalWrite(LED_PIN, LOW);
+    Serial.println("Good lighting condition!");
+  }
+
+  delay(1000); // Adjust delay as needed
+}
