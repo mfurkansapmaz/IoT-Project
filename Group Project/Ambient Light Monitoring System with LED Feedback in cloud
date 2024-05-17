@@ -1,0 +1,67 @@
+#include "thingProperties.h"
+
+const int LDR_PIN = A0;    // Analog pin where LDR is connected
+const int LED_PIN = D1;    // Define LED pin
+
+// Define thresholds
+const int LIGHT_THRESHOLD = 700;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(LDR_PIN, INPUT);      // Initialize LDR pin
+  pinMode(LED_PIN, OUTPUT);     // Initialize LED pin
+  initProperties();
+  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+  ArduinoCloud.addProperty(lightlux, READ, ON_CHANGE);
+  ArduinoCloud.addProperty(lightMessage, READWRITE, ON_CHANGE);
+  ArduinoCloud.addProperty(lightstate, READWRITE, ON_CHANGE);
+  setDebugMessageLevel(2);
+  ArduinoCloud.printDebugInfo();
+   pinMode(LDR_PIN , INPUT);
+}
+
+void loop() {
+  ArduinoCloud.update(); // Update cloud properties
+
+  // Read light intensity
+  int lightIntensity = analogRead(LDR_PIN);
+
+  // Print light intensity to serial monitor
+  Serial.print("Light intensity: ");
+  Serial.println(lightIntensity);
+
+  // Map the light sensor value to a range of 0-255
+  int lightIntensityMapped = map(lightIntensity, 0, 1023, 0, 255);
+
+  // Update the value of lightlux variable
+  lightlux = lightIntensityMapped;
+
+  // Check light intensity
+  if (lightIntensity > LIGHT_THRESHOLD) {
+    // If light intensity is above threshold, set light state and message
+    lightMessage = "Not enough light";
+    lightstate = true;
+    digitalWrite(LED_PIN, HIGH);   // Turn on LED
+  } else {
+    // If light intensity is below threshold, set light state and message
+    lightMessage = "Good lighting condition";
+    lightstate = false;
+    digitalWrite(LED_PIN, LOW);  
+      ArduinoCloud.update();// Turn off LED
+  }
+
+  delay(1000); // Adjust delay as needed
+}
+
+// These functions are placeholders for future expansion
+void onLightluxChange() {
+  // Add your code here to act upon Lightlux change (optional)
+}
+
+void onLightMessageChange() {
+  // Add your code here to act upon Light Message change (optional)
+}
+
+void onLightstateChange()  {
+  // Add your code here to act upon Lightstate change (optional)
+}
