@@ -1,0 +1,155 @@
+#include "thingProperties.h"
+#include <DallasTemperature.h>
+#include <OneWire.h>
+#define ONE_WIRE_BUS D1
+#define BUZZER_PIN D2 // Define the pin for the buzzer
+#define BUZZER_FREQUENCY 2000 // Define the frequency for the buzzer
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+
+const int smokePin = A0; // Replace with your actual analog pin
+int smokeValue;
+bool buzzerActive = false; // Variable to track buzzer state
+
+void setup() {
+  // Initialize serial and wait for port to open:
+  Serial.begin(9600);
+  // Start the OneWire library
+  sensors.begin();
+  // Delay for Serial Monitor
+  delay(1500);
+  // Defined in thingProperties.h
+  initProperties();
+  // Connect to Arduino IoT Cloud
+  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+  ArduinoCloud.addProperty(temperature_Celsius, READ, ON_CHANGE);
+  ArduinoCloud.addProperty(smoke_ppm, READ, ON_CHANGE);  // Add smoke property
+  ArduinoCloud.addProperty(temperature_message, READWRITE, ON_CHANGE); // Add message property for temperature
+  ArduinoCloud.addProperty(smokeMessage, READWRITE, ON_CHANGE); // Add message property for smoke
+  ArduinoCloud.addProperty(lED, READWRITE, ON_CHANGE); // Add LED property
+  setDebugMessageLevel(2);
+  ArduinoCloud.printDebugInfo();
+  pinMode(smokePin, INPUT); // Initialize smoke sensor pin
+  pinMode(BUZZER_PIN, OUTPUT); // Initialize buzzer pin
+}
+
+void loop() {
+  ArduinoCloud.update();
+  // Request temperature readings from all DS18B20 sensors
+  // Get the temperature from the first sensor (assuming only one sensor)
+  sensors.requestTemperatures();
+  float tempC = sensors.getTempCByIndex(0);
+  // Update the temperature property
+  if (!isnan(tempC)) {
+    temperature_Celsius = tempC;
+    ArduinoCloud.update();
+    // Update message based on temperature
+    if (tempC > 50) {
+      temperature_message = "Temperature is above 50 degrees Celsius";
+      activateBuzzer(); // Activate buzzer if temperature exceeds 50 degrees
+    } else {
+      temperature_message = "Temperature is below 50 degrees Celsius";
+      deactivateBuzzer(); // Deactivate buzzer if temperature is below 50 degrees
+    }
+    ArduinoCloud.update();
+  }
+
+  // Read smoke sensor value
+  smokeValue = analogRead(smokePin);
+
+  // Update smoke property
+  if (!isnan(smokeValue)) {
+    smoke_ppm = smokeValue;
+    ArduinoCloud.update();
+    // Update smoke message based on smoke value
+    if (smokeValue > 200) {
+      smokeMessage = "Fire situation: smoke value is above 200";
+      activateBuzzer(); // Activate buzzer if smoke value exceeds 200 ppm
+    } else {
+      smokeMessage = "Normal situation: smoke value is below 200";
+      deactivateBuzzer(); // Deactivate buzzer if smoke value is below 200 ppm
+    }
+    ArduinoCloud.update();
+  }
+
+  // Update LED based on temperature and smoke conditions
+  if (temperature_message.indexOf("above 50") != -1 || smokeMessage.indexOf("above 200") != -1) {
+    lED = true; // Set LED to red if temperature exceeds 50 or smoke exceeds 200
+  } else {
+    lED = false; // Set LED to green otherwise
+  }
+  ArduinoCloud.update();
+
+  delay(1000);
+}
+
+void activateBuzzer() {
+  if (!buzzerActive) {
+    tone(BUZZER_PIN, BUZZER_FREQUENCY); // Activate the buzzer if it's not already active
+    buzzerActive = true;
+  }
+}
+
+void deactivateBuzzer() {
+  if (buzzerActive) {
+    noTone(BUZZER_PIN); // Deactivate the buzzer if it's active
+    buzzerActive = false;
+  }
+}
+
+void onTemperatureChange() {
+  Serial.println(temperature_Celsius);
+}
+
+/*
+  Since Smoke is READ variable, onSmokeChange() is executed every time a new value is received from IoT Cloud.
+*/
+void onSmokeChange() {
+  // Add your code here to act upon Smoke change (optional)
+}
+
+/*
+  Since message is READWRITE variable, onMessageChange() is executed every time a new value is received from IoT Cloud or when you update it from the dashboard.
+*/
+void onMessageChange() {
+  // Add your code here to act upon Message change (optional)
+}
+
+/*
+  Since smokeMessage is READWRITE variable, onSmokeMessageChange() is executed every time a new value is received from IoT Cloud or when you update it from the dashboard.
+*/
+void onSmokeMessageChange() {
+  // Add your code here to act upon Smoke Message change (optional)
+}
+
+/*
+  Since TemperatureCelsius is READ_WRITE variable, onTemperatureCelsiusChange() is
+  executed every time a new value is received from IoT Cloud.
+*/
+void onTemperatureCelsiusChange()  {
+  // Add your code here to act upon TemperatureCelsius change
+}
+
+/*
+  Since SmokePpm is READ_WRITE variable, onSmokePpmChange() is
+  executed every time a new value is received from IoT Cloud.
+*/
+void onSmokePpmChange()  {
+  // Add your code here to act upon SmokePpm change
+}
+
+/*
+  Since TemperatureMessage is READ_WRITE variable, onTemperatureMessageChange() is
+  executed every time a new value is received from IoT Cloud.
+*/
+void onTemperatureMessageChange()  {
+  // Add your code here to act upon TemperatureMessage change
+}
+
+/*
+  Since LED is READ_WRITE variable, onLEDChange() is
+  executed every time a new value is received from IoT Cloud.
+*/
+void onLEDChange()  {
+  // Add your code here to act upon LED change
+}
