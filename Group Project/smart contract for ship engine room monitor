@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract EngineRoomMonitor {
+    // Define an event to log incidents
+    event IncidentLogged(uint256 timestamp, string sensorType, uint256 value, string message);
+    event MaintenanceRequested(uint256 timestamp, string sensorType, uint256 value, address serviceProvider);
+    event InspectionScheduled(uint256 timestamp, string sensorType, uint256 value, address serviceProvider);
+
+    // Define threshold values
+    uint256 constant TEMPERATURE_THRESHOLD = 50;
+    uint256 constant SMOKE_THRESHOLD = 200;
+
+    // Define structure to store service providers
+    struct ServiceProvider {
+        string name;
+        address payable serviceAddress;
+        bool providesMaintenance;
+    }
+
+    // List of pre-approved service providers
+    ServiceProvider[] public serviceProviders;
+
+    // Function to add a service provider
+    function addServiceProvider(string memory name, address payable serviceAddress, bool providesMaintenance) public {
+        serviceProviders.push(ServiceProvider(name, serviceAddress, providesMaintenance));
+    }
+
+    // Function to log sensor data and check for incidents
+    function logSensorData(string memory sensorType, uint256 value) public {
+        bool isIncident = false;
+        
+        if (keccak256(abi.encodePacked(sensorType)) == keccak256("temperature") && value > TEMPERATURE_THRESHOLD) {
+            isIncident = true;
+        } else if (keccak256(abi.encodePacked(sensorType)) == keccak256("smoke") && value > SMOKE_THRESHOLD) {
+            isIncident = true;
+        }
+        
+        if (isIncident) {
+            // Log incident
+            emit IncidentLogged(block.timestamp, sensorType, value, "Incident detected");
+
+            // Request maintenance or schedule inspection
+            requestService(sensorType, value);
+        }
+    }
+
+    // Function to request maintenance or schedule inspection
+    function requestService(string memory sensorType, uint256 value) internal {
+        for (uint256 i = 0; i < serviceProviders.length; i++) {
+            if (serviceProviders[i].providesMaintenance) {
+                // Request maintenance
+                emit MaintenanceRequested(block.timestamp, sensorType, value, serviceProviders[i].serviceAddress);
+            } else {
+                // Schedule inspection
+                emit InspectionScheduled(block.timestamp, sensorType, value, serviceProviders[i].serviceAddress);
+            }
+        }
+    }
+}
+
+
+      
